@@ -183,7 +183,7 @@ public class RandoopSystemTest {
         systemTestEnvironment.createTestEnvironment("collections-test");
 
     RandoopOptions options = RandoopOptions.createOptions(testEnvironment);
-    options.setPackageName("foo.bar");
+    options.setPackageName("java2.util2");
     options.setRegressionBasename("TestClass");
     options.addTestClass("java2.util2.TreeSet");
     options.addTestClass("java2.util2.Collections");
@@ -195,32 +195,72 @@ public class RandoopSystemTest {
     options.setOption("omit-field-list", "resources/systemTest/testclassomitfields.txt");
 
     CoverageChecker coverageChecker = new CoverageChecker(options);
+
+    // The following may or may not be selected based on the output limit.
+    coverageChecker.ignore("java2.util2.Collections.enumeration(java2.util2.Collection)");
+    coverageChecker.ignore(
+        "java2.util2.Collections.lastIndexOfSubList(java2.util2.List, java2.util2.List)");
+    coverageChecker.ignore("java2.util2.Collections.list(java2.util2.Enumeration)");
+    coverageChecker.ignore(
+        "java2.util2.Collections.min(java2.util2.Collection, java2.util2.Comparator)");
+    coverageChecker.ignore(
+        "java2.util2.Collections.replaceAll(java2.util2.List, java.lang.Object, java.lang.Object)");
+    coverageChecker.ignore("java2.util2.Collections.singleton(java.lang.Object)");
+    coverageChecker.ignore(
+        "java2.util2.Collections.synchronizedCollection(java2.util2.Collection)");
+    coverageChecker.ignore(
+        "java2.util2.Collections.synchronizedCollection(java2.util2.Collection, java.lang.Object)");
+    coverageChecker.ignore("java2.util2.Collections.synchronizedList(java2.util2.List)");
+    coverageChecker.ignore("java2.util2.Collections.synchronizedMap(java2.util2.Map)");
+    coverageChecker.ignore(
+        "java2.util2.Collections.unmodifiableCollection(java2.util2.Collection)");
+    coverageChecker.ignore("java2.util2.Collections.unmodifiableMap(java2.util2.Map)");
+
+    // Helper methods of called methods
+    // private helper of rotate --- may be legitimate coverage issue
+    coverageChecker.exclude("java2.util2.Collections.rotate2(java2.util2.List, int)");
+    //called by shuffle
+    coverageChecker.exclude("java2.util2.Collections.swap(java.lang.Object[], int, int)");
+    //called by reverse and shuffle
+    coverageChecker.exclude("java2.util2.Collections.swap(java2.util2.List, int, int)");
+
+    //Bad Input:
+    // these are only called with empty set and so throw NoSuchElementException
+    coverageChecker.ignore("java2.util2.TreeSet.first()");
+    coverageChecker.ignore("java2.util2.TreeSet.last()");
+
+    // called by binarySearch - always throws ClassCastException
     coverageChecker.exclude("java2.util2.Collections.get(java2.util2.ListIterator, int)");
+    coverageChecker.exclude(
+        "java2.util2.Collections.indexedBinarySearch(java2.util2.List, java.lang.Object, java2.util2.Comparator)");
     coverageChecker.exclude(
         "java2.util2.Collections.iteratorBinarySearch(java2.util2.List, java.lang.Object)");
     coverageChecker.exclude(
         "java2.util2.Collections.iteratorBinarySearch(java2.util2.List, java.lang.Object, java2.util2.Comparator)");
-    coverageChecker.exclude("java2.util2.Collections.rotate2(java2.util2.List, int)");
-    coverageChecker.exclude("java2.util2.Collections.swap(java.lang.Object[], int, int)");
-    coverageChecker.exclude("java2.util2.Collections.swap(java2.util2.List, int, int)");
-    coverageChecker.exclude(
-        "java2.util2.Collections.synchronizedCollection(java2.util2.Collection, java.lang.Object)");
-    coverageChecker.exclude(
-        "java2.util2.Collections.synchronizedList(java2.util2.List, java.lang.Object)");
+
+    // has failure - called with null
     coverageChecker.exclude(
         "java2.util2.Collections.synchronizedSet(java2.util2.Set, java.lang.Object)");
     coverageChecker.exclude("java2.util2.Collections.synchronizedSortedMap(java2.util2.SortedMap)");
+
+    // cannot create input
     coverageChecker.exclude("java2.util2.Collections.unmodifiableSortedMap(java2.util2.SortedMap)");
-    coverageChecker.exclude("java2.util2.TreeSet.readObject(java.io.ObjectInputStream)");
+
+    // always results in ClassCastException
     coverageChecker.exclude("java2.util2.TreeSet.subSet(java.lang.Object, java.lang.Object)");
+
+    // these are private and not called from within class
+    coverageChecker.exclude("java2.util2.TreeSet.readObject(java.io.ObjectInputStream)");
     coverageChecker.exclude("java2.util2.TreeSet.writeObject(java.io.ObjectOutputStream)");
 
     //TODO after changed types to ordered set in OperationModel, failing on Travis, but not locally
+    /*
     coverageChecker.ignore("java2.util2.Collections.synchronizedSet(java2.util2.Set)");
     coverageChecker.ignore("java2.util2.Collections.synchronizedSortedSet(java2.util2.SortedSet)");
     coverageChecker.ignore("java2.util2.TreeSet.first()");
     coverageChecker.ignore("java2.util2.TreeSet.last()");
     coverageChecker.ignore("java2.util2.TreeSet.tailSet(java.lang.Object)");
+    */
     ExpectedTests expectedRegressionTests = ExpectedTests.SOME;
     ExpectedTests expectedErrorTests = ExpectedTests.NONE;
 
@@ -228,6 +268,54 @@ public class RandoopSystemTest {
         testEnvironment, options, expectedRegressionTests, expectedErrorTests, coverageChecker);
   }
 
+  @Test
+  public void runJava2TreeSetTest() {
+    TestEnvironment testEnvironment =
+        systemTestEnvironment.createTestEnvironment("treeset2-only-test");
+    RandoopOptions options = RandoopOptions.createOptions(testEnvironment);
+    options.setPackageName("test.output");
+    options.setRegressionBasename("TreeSetTest");
+    options.addTestClass("java2.util2.TreeSet");
+    options.setFlag("no-error-revealing-tests");
+    options.setOption("outputlimit", "200");
+    options.setOption("npe-on-null-input", "EXPECTED");
+    CoverageChecker coverageChecker = new CoverageChecker(options);
+
+    // these are only called with empty set and so throw NoSuchElementException
+    coverageChecker.ignore("java2.util2.TreeSet.first()");
+    coverageChecker.ignore("java2.util2.TreeSet.last()");
+    // this always results in ClassCastException
+    coverageChecker.exclude("java2.util2.TreeSet.subSet(java.lang.Object, java.lang.Object)");
+    // these are private and not called from within class
+    coverageChecker.exclude("java2.util2.TreeSet.readObject(java.io.ObjectInputStream)");
+    coverageChecker.exclude("java2.util2.TreeSet.writeObject(java.io.ObjectOutputStream)");
+
+    ExpectedTests expectedRegressionTests = ExpectedTests.SOME;
+    ExpectedTests expectedErrorTests = ExpectedTests.NONE;
+
+    generateAndTestWithCoverage(
+        testEnvironment, options, expectedRegressionTests, expectedErrorTests, coverageChecker);
+  }
+  /*
+    @Test
+    public void runCurrentTreeSetTest() {
+      TestEnvironment testEnvironment =
+          systemTestEnvironment.createTestEnvironment("treeset-only-test");
+      RandoopOptions options = RandoopOptions.createOptions(testEnvironment);
+      options.setPackageName("test.output");
+      options.setRegressionBasename("TreeSetTest");
+      options.addTestClass("java.util.TreeSet");
+      options.setFlag("no-error-revealing-tests");
+      options.setOption("outputlimit", "200");
+      options.setOption("npe-on-null-input", "EXPECTED");
+      CoverageChecker coverageChecker = new CoverageChecker(options);
+      ExpectedTests expectedRegressionTests = ExpectedTests.SOME;
+      ExpectedTests expectedErrorTests = ExpectedTests.NONE;
+
+      generateAndTestWithCoverage(
+          testEnvironment, options, expectedRegressionTests, expectedErrorTests, coverageChecker);
+    }
+  */
   /** Test formerly known as randoop2. Previously did a diff on generated test. */
   @Test
   public void runNaiveCollectionsTest() {
@@ -235,7 +323,7 @@ public class RandoopSystemTest {
     TestEnvironment testEnvironment =
         systemTestEnvironment.createTestEnvironment("naive-collections-test");
     RandoopOptions options = RandoopOptions.createOptions(testEnvironment);
-    options.setPackageName("foo.bar");
+    options.setPackageName("java2.util2");
     options.setRegressionBasename("NaiveRegression");
     options.setErrorBasename("NaiveError");
     options.setOption("outputlimit", "200");
@@ -244,53 +332,13 @@ public class RandoopSystemTest {
     options.addTestClass("java2.util2.LinkedList");
     options.addTestClass("java2.util2.Collections");
     options.setOption("omit-field-list", "resources/systemTest/naiveomitfields.txt");
+    options.setFlag("print-selection");
 
     CoverageChecker coverageChecker = new CoverageChecker(options);
-    coverageChecker.exclude("java2.util2.ArrayList.add(int, java.lang.Object)");
-    coverageChecker.exclude("java2.util2.ArrayList.get(int)");
-    coverageChecker.exclude("java2.util2.ArrayList.lastIndexOf(java.lang.Object)");
-    coverageChecker.exclude("java2.util2.ArrayList.readObject(java.io.ObjectInputStream)");
-    coverageChecker.exclude("java2.util2.ArrayList.remove(int)");
-    coverageChecker.exclude("java2.util2.ArrayList.removeRange(int, int)");
-    coverageChecker.exclude("java2.util2.ArrayList.set(int, java.lang.Object)");
-    coverageChecker.exclude("java2.util2.ArrayList.writeObject(java.io.ObjectOutputStream)");
-    coverageChecker.exclude("java2.util2.Collections.eq(java.lang.Object, java.lang.Object)");
-    coverageChecker.exclude("java2.util2.Collections.get(java2.util2.ListIterator, int)");
-    coverageChecker.exclude(
-        "java2.util2.Collections.indexOfSubList(java2.util2.List, java2.util2.List)");
-    coverageChecker.exclude(
-        "java2.util2.Collections.iteratorBinarySearch(java2.util2.List, java.lang.Object)");
-    coverageChecker.exclude(
-        "java2.util2.Collections.iteratorBinarySearch(java2.util2.List, java.lang.Object, java2.util2.Comparator)");
-    coverageChecker.exclude("java2.util2.Collections.rotate2(java2.util2.List, int)");
-    coverageChecker.exclude("java2.util2.Collections.shuffle(java2.util2.List)");
-    coverageChecker.exclude(
-        "java2.util2.Collections.shuffle(java2.util2.List, java2.util2.Random)");
-    coverageChecker.exclude("java2.util2.Collections.swap(java.lang.Object[], int, int)");
-    coverageChecker.exclude("java2.util2.Collections.swap(java2.util2.List, int, int)");
-    coverageChecker.exclude(
-        "java2.util2.Collections.synchronizedCollection(java2.util2.Collection, java.lang.Object)");
-    coverageChecker.exclude(
-        "java2.util2.Collections.synchronizedList(java2.util2.List, java.lang.Object)");
-    coverageChecker.exclude(
-        "java2.util2.Collections.synchronizedSet(java2.util2.Set, java.lang.Object)");
-    coverageChecker.exclude("java2.util2.Collections.synchronizedSortedMap(java2.util2.SortedMap)");
-    coverageChecker.exclude("java2.util2.Collections.unmodifiableList(java2.util2.List)");
-    coverageChecker.exclude("java2.util2.Collections.unmodifiableSortedMap(java2.util2.SortedMap)");
-    coverageChecker.exclude("java2.util2.Collections.unmodifiableSortedSet(java2.util2.SortedSet)");
-    coverageChecker.exclude("java2.util2.LinkedList.add(int, java.lang.Object)");
-    coverageChecker.exclude("java2.util2.LinkedList.addFirst(java.lang.Object)");
-    coverageChecker.exclude("java2.util2.LinkedList.addLast(java.lang.Object)");
-    coverageChecker.exclude("java2.util2.LinkedList.get(int)");
+
     coverageChecker.exclude("java2.util2.LinkedList.readObject(java.io.ObjectInputStream)");
-    coverageChecker.exclude("java2.util2.LinkedList.remove(int)");
     coverageChecker.exclude("java2.util2.LinkedList.writeObject(java.io.ObjectOutputStream)");
-    coverageChecker.exclude("java2.util2.TreeSet.first()");
-    coverageChecker.exclude("java2.util2.TreeSet.headSet(java.lang.Object)");
-    coverageChecker.exclude("java2.util2.TreeSet.last()");
     coverageChecker.exclude("java2.util2.TreeSet.readObject(java.io.ObjectInputStream)");
-    coverageChecker.exclude("java2.util2.TreeSet.subSet(java.lang.Object, java.lang.Object)");
-    coverageChecker.exclude("java2.util2.TreeSet.tailSet(java.lang.Object)");
     coverageChecker.exclude("java2.util2.TreeSet.writeObject(java.io.ObjectOutputStream)");
 
     ExpectedTests expectedRegressionTests = ExpectedTests.SOME;
@@ -1060,7 +1108,7 @@ public class RandoopSystemTest {
     RandoopRunStatus runStatus =
         RandoopRunStatus.generateAndCompile(environment, options, allowRandoopFailure);
 
-    System.out.println("Randoop:");
+    System.out.println("** Randoop output **");
     boolean prevLineIsBlank = false;
     for (String line : runStatus.processStatus.outputLines) {
       if ((line.isEmpty() && !prevLineIsBlank)

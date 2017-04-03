@@ -33,6 +33,11 @@ public abstract class GenInputsAbstract extends CommandHandler {
     super(command, pitch, commandGrammar, where, summary, notes, input, output, example, options);
   }
 
+  @Unpublicized
+  @OptionGroup("unpublicized")
+  @Option("print each selected operation")
+  public static boolean print_selection = false;
+
   /**
    * The fully-qualified name of a class to test; for example, <code>--testclass=java.util.TreeSet
    * </code>. All of its methods are methods under test. This class is tested in addition to any

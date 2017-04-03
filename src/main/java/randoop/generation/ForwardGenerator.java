@@ -314,6 +314,10 @@ public class ForwardGenerator extends AbstractGenerator {
     if (Log.isLoggingOn()) {
       Log.logLine("Selected operation: " + operation.toString());
     }
+    if (GenInputsAbstract.print_selection) {
+      System.out.println("Selected: " + operation.toString());
+    }
+
     if (operation.isGeneric() || operation.hasWildcardTypes()) {
       try {
         operation = instantiator.instantiate((TypedClassOperation) operation);

@@ -75,6 +75,7 @@ class CoverageChecker {
    * @param errorStatus the {@link TestRunStatus} from the error tests
    */
   void checkCoverage(TestRunStatus regressionStatus, TestRunStatus errorStatus) {
+    System.out.println("** Coverage **");
 
     Set<String> missingMethods = new TreeSet<>();
     Set<String> shouldBeMissingMethods = new TreeSet<>();
